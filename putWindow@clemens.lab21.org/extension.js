@@ -50,6 +50,31 @@ MoveWindow.prototype = {
     this._keyBindingHandlers[keybinding] =
         this._shellwm.connect('keybinding::' + keybinding, handler);
   },
+  
+  _thirdsE : function(win, where, x, y, width1, width2, width3, height) {
+    if(win.last_move == where) {
+	    this._resize(win, width3, y, width2, height)
+      win.last_move = where + where;
+    } else if (win.last_move == (where + where)) {
+	    this._resize(win, width2, y, width3, height)
+      win.last_move = (where+where+where);
+    } else {
+	    this._resize(win, x, y, width1, height)
+      win.last_move = where;
+    }
+  },
+  _thirdsW : function(win, where, x, y, width1, width2, width3, height) {
+    if(win.last_move == where) {
+	    this._resize(win, x, y, width2, height)
+      win.last_move = where + where;
+    } else if (win.last_move == (where + where)) {
+	    this._resize(win, x, y, width3, height)
+      win.last_move = (where+where+where);
+    } else {
+	    this._resize(win, x, y, width1, height)
+      win.last_move = where;
+    }
+  },
 
   /**
    * pass width or height = -1 to maximize in this direction
@@ -99,35 +124,30 @@ MoveWindow.prototype = {
  
     if (where=="n") {
       this._resize(win, s.x, s.y, -1, s.height);
+      win.last_move = "n";
     } else if (where == "e") {
-      if (sIndex < (sl-1) && sameWidth && maxH && pos.x + s.width >= s.totalWidth) {
-        s = this._screens[(sIndex+1)];
-        this._resize(win, s.x, s.y, s.width, -1);
-      } else {
-        this._resize(win, (s.x + s.width), s.y, s.width, -1);
-      }
-      win.last_move = "e";
+      this._thirdsE(win, "e", s.x+s.width, s.y, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, -1);
     } else if (where == "s") {
       this._resize(win, s.x, s.sy, -1, s.height);
+      win.last_move = "s";
     } else if (where == "w") {
-      // if we are not on screen[i>0] move window to the left screen
-      let newX = pos.x - s.width;
-      if (sIndex > 0 && sameWidth && maxH && newX < (s.width + 150)) {
-        s = this._screens[(sIndex-1)];
-        this._resize(win, (s.x + s.width), s.y, s.width, -1);
-      } else {
-        this._resize(win, s.x, s.y, s.width, -1);
-      }
-    } 
+      this._thirdsW(win, "w", s.x, s.y, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, -1);
+    }
     
     if (where == "ne") {
-      this._resize(win, s.x + s.width, s.y, s.width, s.height)
+      this._thirdsE(win, "ne", s.x+s.width, s.y, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, s.height);
     } else if (where == "se") {
-      this._resize(win, s.x + s.width, s.sy, s.width, s.height)
+      this._thirdsE(win, "se", s.x+s.width, s.sy, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, s.height);
     } else if (where == "sw") {
-      this._resize(win, s.x, s.sy, s.width, s.height)
+      this._thirdsW(win, "sw", s.x, s.sy, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, s.height);
     } else if (where == "nw") {
-      this._resize(win, s.x, s.y, s.width, s.height)
+      this._thirdsW(win, "sw", s.x, s.y, s.width,
+                    (s.totalWidth/3)*2, s.totalWidth/3, s.height);
     }
     
     // calculate the center position and check if the window is already there
